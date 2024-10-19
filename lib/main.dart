@@ -91,7 +91,7 @@ class _MyHomePageState extends State<MyHomePage> {
       floatingActionButton: FloatingActionButton(
         onPressed: () {
           setState(() {
-            _counter++; // Проста інкрементація
+            _counter++;
           });
         },
         tooltip: 'Increment',
