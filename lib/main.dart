@@ -36,20 +36,20 @@ class _MyHomePageState extends State<MyHomePage> {
   void _updateCounter() {
     final input = _controller.text;
 
-    if (input == "Avada Kedavra") {
+    if (input == 'Avada Kedavra') {
       setState(() {
-        _counter = 0; // Скидання лічильника
+        _counter = 0;
       });
     } else {
       final parsedValue = int.tryParse(input);
       if (parsedValue != null) {
         setState(() {
-          _counter += parsedValue; // Додавання значення до лічильника
+          _counter += parsedValue;
         });
       }
     }
 
-    _controller.clear(); // Очистка поля вводу
+    _controller.clear();
   }
 
   @override
@@ -71,7 +71,7 @@ class _MyHomePageState extends State<MyHomePage> {
               style: Theme.of(context).textTheme.headlineMedium,
             ),
             Padding(
-              padding: const EdgeInsets.symmetric(vertical: 20.0),
+              padding: const EdgeInsets.symmetric(vertical: 20),
               child: TextField(
                 controller: _controller,
                 decoration: const InputDecoration(
