@@ -40,7 +40,7 @@ class LoginPageState extends State<LoginPage> {
 
   Future<void> _initializeCurrentUser() async {
     final user = await _currentUserRepository!.getCurrentUser();
-    if (user != null) {
+    if (user != null && mounted) {
       Navigator.pushNamed(context, '/home');
     }
   }
