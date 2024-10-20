@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:untitled/entity/subject.dart';
 import 'package:untitled/repository/shared/prefs/shared_prefs_subject_repository.dart';
+import 'package:untitled/service/connectivity_service.dart';
 import 'package:untitled/service/subject_service.dart';
 
 class HomePage extends StatefulWidget {
@@ -17,14 +18,17 @@ class HomePageState extends State<HomePage> {
   final _completedLabsController = TextEditingController();
   SharedPrefsSubjectRepository? _subjectRepository;
   SubjectService? _subjectService;
+  ConnectivityService? _connectivityService;
 
   List<Subject> _subjects = [];
-
 
   Future<void> _initializeServices() async {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
     _subjectRepository = SharedPrefsSubjectRepository(prefs);
     _subjectService = SubjectService(_subjectRepository!);
+    if (mounted) {
+      _connectivityService = ConnectivityService(context);
+    }
   }
 
   Future<void> _initializeAndLoadSubjects() async {
@@ -36,6 +40,12 @@ class HomePageState extends State<HomePage> {
   void initState() {
     super.initState();
     _initializeAndLoadSubjects();
+  }
+
+  @override
+  void dispose() {
+    _connectivityService?.dispose();
+    super.dispose();
   }
 
   @override

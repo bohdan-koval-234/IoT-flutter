@@ -1,8 +1,10 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:untitled/repository/shared/prefs/shared_prefs_current_user_repository.dart';
 import 'package:untitled/repository/shared/prefs/shared_prefs_user_repository.dart';
 import 'package:untitled/service/user_service.dart';
+import 'package:untitled/ui/component/success_dialog.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -21,24 +23,34 @@ class LoginPageState extends State<LoginPage> {
   @override
   void initState() {
     super.initState();
-    _initializeAndInitializeCurrentUser();
+    _initializeApp();
+  }
+
+  Future<void> _initializeApp() async {
+    await _initializeServices();
+    await _loadCurrentUser();
   }
 
   Future<void> _initializeServices() async {
-    final prefs = await SharedPreferences.getInstance();
-    _userRepository = SharedPrefsUserRepository(prefs);
-    _currentUserRepository = SharedPrefsCurrentUserRepository(prefs);
-    _userService = UserService(_userRepository!, _currentUserRepository!);
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      _userRepository = SharedPrefsUserRepository(prefs);
+      _currentUserRepository = SharedPrefsCurrentUserRepository(prefs);
+      _userService = UserService(_userRepository!, _currentUserRepository!);
 
-    setState(() {});
+      if (mounted) {
+        setState(() {});
+      }
+    } catch (e) {
+      if (kDebugMode) {
+        print('Error initializing services: $e');
+      }
+    }
   }
 
-  Future<void> _initializeAndInitializeCurrentUser() async {
-    await _initializeServices();
-    await _initializeCurrentUser();
-  }
+  Future<void> _loadCurrentUser() async {
+    if (!mounted) return;
 
-  Future<void> _initializeCurrentUser() async {
     final user = await _currentUserRepository!.getCurrentUser();
     if (user != null && mounted) {
       Navigator.pushNamed(context, '/home');
@@ -88,7 +100,9 @@ class LoginPageState extends State<LoginPage> {
       try {
         final bool login = await _userService!.login(email, password);
         if (login && mounted) {
-          Navigator.pushNamed(context, '/home');
+          showSuccessDialog(context, () {
+            Navigator.pushNamed(context, '/home');
+          }, 'Login successful!',);
         } else {
            if (mounted) {
              ScaffoldMessenger.of(context).showSnackBar(

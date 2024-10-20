@@ -3,6 +3,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:untitled/repository/shared/prefs/shared_prefs_current_user_repository.dart';
 import 'package:untitled/repository/shared/prefs/shared_prefs_user_repository.dart';
 import 'package:untitled/service/user_service.dart';
+import 'package:untitled/ui/component/success_dialog.dart';
 
 class RegistrationPage extends StatefulWidget {
   const RegistrationPage({super.key});
@@ -79,7 +80,9 @@ class RegistrationPageState extends State<RegistrationPage> {
         return;
       }
       if (mounted) {
-        Navigator.pushNamed(context, '/home');
+        showSuccessDialog(context, () {
+          Navigator.pushNamed(context, '/home');
+        }, 'Register successful!',);
       }
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
