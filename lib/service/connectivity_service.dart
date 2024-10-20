@@ -7,16 +7,17 @@ class ConnectivityService {
 
   ConnectivityService(BuildContext context) {
     _subscription = InternetConnection().onStatusChange.listen((status) {
-        if (context.mounted && status == InternetStatus.connected) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Connected to the internet')),
-          );
-        } else if (context.mounted && status == InternetStatus.disconnected) {
+        if (context.mounted && status == InternetStatus.disconnected) {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(content: Text('No internet connection!')),
           );
         }
     });
+  }
+
+  Future<InternetStatus> getCurrentStatus() async {
+    final bool isConnected = await InternetConnection().hasInternetAccess;
+    return isConnected ? InternetStatus.connected : InternetStatus.disconnected;
   }
 
   void dispose() {

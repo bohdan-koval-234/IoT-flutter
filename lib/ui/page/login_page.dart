@@ -1,9 +1,12 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:internet_connection_checker_plus/internet_connection_checker_plus.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:untitled/repository/shared/prefs/shared_prefs_current_user_repository.dart';
 import 'package:untitled/repository/shared/prefs/shared_prefs_user_repository.dart';
+import 'package:untitled/service/connectivity_service.dart';
 import 'package:untitled/service/user_service.dart';
+import 'package:untitled/ui/component/no_internet_dialog.dart';
 import 'package:untitled/ui/component/success_dialog.dart';
 
 class LoginPage extends StatefulWidget {
@@ -19,6 +22,7 @@ class LoginPageState extends State<LoginPage> {
   SharedPrefsUserRepository? _userRepository;
   SharedPrefsCurrentUserRepository? _currentUserRepository;
   UserService? _userService;
+  ConnectivityService? _connectivityService;
 
   @override
   void initState() {
@@ -31,6 +35,12 @@ class LoginPageState extends State<LoginPage> {
     await _loadCurrentUser();
   }
 
+  @override
+  void dispose() {
+    _connectivityService?.dispose();
+    super.dispose();
+  }
+
   Future<void> _initializeServices() async {
     try {
       final prefs = await SharedPreferences.getInstance();
@@ -39,6 +49,7 @@ class LoginPageState extends State<LoginPage> {
       _userService = UserService(_userRepository!, _currentUserRepository!);
 
       if (mounted) {
+        _connectivityService = ConnectivityService(context);
         setState(() {});
       }
     } catch (e) {
@@ -52,6 +63,16 @@ class LoginPageState extends State<LoginPage> {
     if (!mounted) return;
 
     final user = await _currentUserRepository!.getCurrentUser();
+    final status = await _connectivityService?.getCurrentStatus();
+
+    if (status == InternetStatus.disconnected && user != null && mounted) {
+      showSuccessDialog(context, () {
+        Navigator.pushNamed(context, '/home');
+      }, 'No internet connection. Logging in with cached user data.'
+          ' You need to connect to internet',);
+      return;
+    }
+
     if (user != null && mounted) {
       Navigator.pushNamed(context, '/home');
     }
@@ -93,34 +114,45 @@ class LoginPageState extends State<LoginPage> {
   }
 
   Future<void> _loginUser() async {
+    final status = await _connectivityService?.getCurrentStatus();
+
+    if (status == InternetStatus.disconnected && mounted) {
+      showNoInternetDialog(context);
+      return;
+    }
+
     final email = _emailController.text.trim();
     final password = _passwordController.text.trim();
 
     if (_isValid(email, password)) {
-      try {
-        final bool login = await _userService!.login(email, password);
-        if (login && mounted) {
-          showSuccessDialog(context, () {
-            Navigator.pushNamed(context, '/home');
-          }, 'Login successful!',);
-        } else {
-           if (mounted) {
-             ScaffoldMessenger.of(context).showSnackBar(
-               const SnackBar(
-                 content: Text('Invalid email or password'),
-               ),
-             );
-           }
-        }
-      } catch (e) {
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Invalid email or password'),
-            ),
-          );
-        }
+      await _attemptLogin(email, password);
+    }
+  }
+
+  Future<void> _attemptLogin(String email, String password) async {
+    try {
+      final bool login = await _userService!.login(email, password);
+      if (login && mounted) {
+        _handleSuccessfulLogin();
+      } else {
+        _showLoginError();
       }
+    } catch (e) {
+      _showLoginError();
+    }
+  }
+
+  void _handleSuccessfulLogin() {
+    showSuccessDialog(context, () {
+      Navigator.pushNamed(context, '/home');
+    }, 'Login successful!',);
+  }
+
+  void _showLoginError() {
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Invalid email or password')),
+      );
     }
   }
 
@@ -133,6 +165,7 @@ class LoginPageState extends State<LoginPage> {
       );
       return false;
     }
+
     return true;
   }
 }

@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:internet_connection_checker_plus/internet_connection_checker_plus.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:untitled/repository/shared/prefs/shared_prefs_current_user_repository.dart';
 import 'package:untitled/repository/shared/prefs/shared_prefs_user_repository.dart';
+import 'package:untitled/service/connectivity_service.dart';
 import 'package:untitled/service/user_service.dart';
+import 'package:untitled/ui/component/no_internet_dialog.dart';
 import 'package:untitled/ui/component/success_dialog.dart';
 
 class RegistrationPage extends StatefulWidget {
@@ -18,6 +21,7 @@ class RegistrationPageState extends State<RegistrationPage> {
   SharedPrefsUserRepository? _userRepository;
   SharedPrefsCurrentUserRepository? _currentUserRepository;
   UserService? _userService;
+  ConnectivityService? _connectivityService;
 
   @override
   void initState() {
@@ -30,8 +34,17 @@ class RegistrationPageState extends State<RegistrationPage> {
     _userRepository = SharedPrefsUserRepository(prefs);
     _currentUserRepository = SharedPrefsCurrentUserRepository(prefs);
     _userService = UserService(_userRepository!, _currentUserRepository!);
+    if (mounted) {
+      _connectivityService = ConnectivityService(context);
+    }
 
     setState(() {});
+  }
+
+  @override
+  void dispose() {
+    _connectivityService?.dispose();
+    super.dispose();
   }
 
   @override
@@ -66,6 +79,13 @@ class RegistrationPageState extends State<RegistrationPage> {
   }
 
   Future<void> _registerUser() async {
+    final status = await _connectivityService?.getCurrentStatus();
+
+    if (status == InternetStatus.disconnected && mounted) {
+      showNoInternetDialog(context);
+      return;
+    }
+
     final email = _emailController.text;
     final password = _passwordController.text;
 
@@ -84,7 +104,7 @@ class RegistrationPageState extends State<RegistrationPage> {
           Navigator.pushNamed(context, '/home');
         }, 'Register successful!',);
       }
-    } else {
+    } else if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('Invalid input'),
