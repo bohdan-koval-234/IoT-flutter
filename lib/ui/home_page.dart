@@ -155,15 +155,15 @@ class HomePageState extends State<HomePage> {
               children: [
                 ElevatedButton(
                   onPressed: () => _incrementCompletedLabs(subject),
-                  child: const Text('Add Completed Lab'),
+                  child: const Text('+'),
                 ),
                 ElevatedButton(
                   onPressed: () => _decrementCompletedLabs(subject),
-                  child: const Text('Remove Completed Lab'),
+                  child: const Text('-'),
                 ),
                 ElevatedButton(
                   onPressed: () => _removeSubject(subject),
-                  child: const Text('Remove Subject'),
+                  child: const Text('X', style: TextStyle(color: Colors.red)),
                 ),
               ],
             ),
@@ -201,6 +201,10 @@ class HomePageState extends State<HomePage> {
   }
 
   Future<void> _incrementCompletedLabs(Subject subject) async {
+    if (subject.completedLabs == subject.totalLabs) {
+      return;
+    }
+
     final updatedSubject = Subject(
       subject.name,
       subject.totalLabs,
@@ -211,6 +215,10 @@ class HomePageState extends State<HomePage> {
   }
 
   Future<void> _decrementCompletedLabs(Subject subject) async {
+    if (subject.completedLabs == 0) {
+      return;
+    }
+
     final updatedSubject = Subject(
       subject.name,
       subject.totalLabs,

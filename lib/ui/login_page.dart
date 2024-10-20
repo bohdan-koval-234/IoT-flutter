@@ -21,7 +21,7 @@ class LoginPageState extends State<LoginPage> {
   @override
   void initState() {
     super.initState();
-    _initializeServices();
+    _initializeAndInitializeCurrentUser();
   }
 
   Future<void> _initializeServices() async {
@@ -31,6 +31,18 @@ class LoginPageState extends State<LoginPage> {
     _userService = UserService(_userRepository!, _currentUserRepository!);
 
     setState(() {});
+  }
+
+  Future<void> _initializeAndInitializeCurrentUser() async {
+    await _initializeServices();
+    await _initializeCurrentUser();
+  }
+
+  Future<void> _initializeCurrentUser() async {
+    final user = await _currentUserRepository!.getCurrentUser();
+    if (user != null) {
+      Navigator.pushNamed(context, '/home');
+    }
   }
 
   @override
