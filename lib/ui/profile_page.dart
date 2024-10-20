@@ -1,0 +1,92 @@
+import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:untitled/entity/user.dart';
+import 'package:untitled/repository/shared/prefs/shared_prefs_current_user_repository.dart';
+import 'package:untitled/repository/shared/prefs/shared_prefs_user_repository.dart';
+import 'package:untitled/service/user_service.dart';
+
+class ProfilePage extends StatefulWidget {
+  const ProfilePage({super.key});
+
+  @override
+  ProfilePageState createState() => ProfilePageState();
+}
+
+class ProfilePageState extends State<ProfilePage> {
+  final _emailController = TextEditingController();
+  SharedPrefsUserRepository? _userRepository;
+  SharedPrefsCurrentUserRepository? _currentUserRepository;
+  UserService? _userService;
+  User? _user;
+
+  Future<void> _initializeServices() async {
+    final prefs = await SharedPreferences.getInstance();
+    _userRepository = SharedPrefsUserRepository(prefs);
+    _currentUserRepository = SharedPrefsCurrentUserRepository(prefs);
+    _userService = UserService(_userRepository!, _currentUserRepository!);
+
+    setState(() {});
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _initializeServices();
+    _loadUserProfile();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Profile'),
+      ),
+      body: _user != null
+          ? Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const CircleAvatar(radius: 50),
+            const SizedBox(height: 16),
+            TextField(
+              controller: _emailController,
+              decoration: const InputDecoration(labelText: 'Email'),
+            ),
+            const SizedBox(height: 16),
+            ElevatedButton(
+              onPressed: _updateProfile,
+              child: const Text('Save'),
+            ),
+            TextButton(
+              onPressed: _logout,
+              child: const Text('Logout'),
+            ),
+          ],
+        ),
+      )
+          : const Center(child: CircularProgressIndicator()),
+    );
+  }
+
+  Future<void> _loadUserProfile() async {
+    await _initializeServices();
+    _user = await _userService!.getCurrentUser();
+    _emailController.text = _user!.email;
+    setState(() {});
+  }
+
+  Future<void> _updateProfile() async {
+    final email = _emailController.text.trim();
+    final updatedUser = _user!.copyWith(email: email);
+    await _userService!.setCurrentUser(updatedUser);
+    _user = updatedUser;
+    setState(() {});
+  }
+
+  Future<void> _logout() async {
+    await _userService!.logout();
+    if (mounted) {
+      Navigator.pushNamed(context, '/login');
+    }
+  }
+}
