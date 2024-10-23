@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:untitled/entity/subject.dart';
+import 'package:labs/entity/subject.dart';
 
 class SubjectCard extends StatelessWidget {
   final Subject subject;

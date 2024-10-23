@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:untitled/entity/subject.dart';
-import 'package:untitled/widgets/add_subject_form.dart';
-import 'package:untitled/widgets/progress_overview.dart';
-import 'package:untitled/widgets/subject_card.dart';
+import 'package:labs/entity/subject.dart';
+import 'package:labs/widgets/add_subject_form.dart';
+import 'package:labs/widgets/progress_overview.dart';
+import 'package:labs/widgets/subject_card.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
