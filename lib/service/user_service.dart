@@ -1,6 +1,6 @@
-import 'package:untitled/entity/user.dart';
-import 'package:untitled/repository/current_user_repository.dart';
-import 'package:untitled/repository/user_repository.dart';
+import 'package:labs/entity/user.dart';
+import 'package:labs/repository/current_user_repository.dart';
+import 'package:labs/repository/user_repository.dart';
 
 class UserService {
   final UserRepository _userRepository;

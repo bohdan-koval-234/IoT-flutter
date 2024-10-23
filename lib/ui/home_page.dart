@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:labs/entity/subject.dart';
+import 'package:labs/repository/shared/prefs/shared_prefs_subject_repository.dart';
+import 'package:labs/service/subject_service.dart';
+import 'package:labs/ui/widgets/add_subject_form.dart';
+import 'package:labs/ui/widgets/progress_overview.dart';
+import 'package:labs/ui/widgets/subject_card.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:untitled/entity/subject.dart';
-import 'package:untitled/repository/shared/prefs/shared_prefs_subject_repository.dart';
-import 'package:untitled/service/subject_service.dart';
-import 'package:untitled/ui/widgets/add_subject_form.dart';
-import 'package:untitled/ui/widgets/progress_overview.dart';
-import 'package:untitled/ui/widgets/subject_card.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -89,7 +89,8 @@ class HomePageState extends State<HomePage> {
   Future<void> _addSubject() async {
     final name = _subjectController.text.trim();
     final totalLabs = int.tryParse(_totalLabsController.text.trim()) ?? 0;
-    final completedLabs = int.tryParse(_completedLabsController.text.trim()) ?? 0;
+    final completedLabs = int.tryParse(_completedLabsController.text.trim())
+        ?? 0;
 
     if (name.isNotEmpty && totalLabs > 0) {
       final subject = Subject(name, totalLabs, completedLabs);

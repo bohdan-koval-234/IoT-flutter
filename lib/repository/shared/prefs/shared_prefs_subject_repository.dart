@@ -1,6 +1,6 @@
+import 'package:labs/entity/subject.dart';
+import 'package:labs/repository/subject_repository.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:untitled/entity/subject.dart';
-import 'package:untitled/repository/subject_repository.dart';
 
 class SharedPrefsSubjectRepository extends SubjectRepository {
   static const _subjectsKey = 'subjects';

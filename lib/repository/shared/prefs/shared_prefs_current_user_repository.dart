@@ -1,7 +1,8 @@
 import 'dart:convert';
+
+import 'package:labs/entity/user.dart';
+import 'package:labs/repository/current_user_repository.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:untitled/entity/user.dart';
-import 'package:untitled/repository/current_user_repository.dart';
 
 class SharedPrefsCurrentUserRepository extends CurrentUserRepository {
   final SharedPreferences _prefs;
