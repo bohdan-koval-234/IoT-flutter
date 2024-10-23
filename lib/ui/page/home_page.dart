@@ -1,12 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:labs/entity/subject.dart';
+import 'package:labs/repository/current_user_repository.dart';
+import 'package:labs/repository/shared/prefs/shared_prefs_current_user_repository.dart';
 import 'package:labs/repository/shared/prefs/shared_prefs_subject_repository.dart';
+import 'package:labs/repository/shared/prefs/shared_prefs_user_repository.dart';
+import 'package:labs/repository/user_repository.dart';
 import 'package:labs/service/connectivity_service.dart';
 import 'package:labs/service/subject_service.dart';
+import 'package:labs/service/user_service.dart';
 import 'package:labs/ui/widgets/add_subject_form.dart';
 import 'package:labs/ui/widgets/progress_overview.dart';
 import 'package:labs/ui/widgets/subject_card.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:uuid/uuid.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -20,15 +26,21 @@ class HomePageState extends State<HomePage> {
   final _totalLabsController = TextEditingController();
   final _completedLabsController = TextEditingController();
   SharedPrefsSubjectRepository? _subjectRepository;
+  CurrentUserRepository? _currentUserRepository;
+  UserRepository? _userRepository;
   SubjectService? _subjectService;
   ConnectivityService? _connectivityService;
+  UserService? _userService;
 
   List<Subject> _subjects = [];
 
   Future<void> _initializeServices() async {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
     _subjectRepository = SharedPrefsSubjectRepository(prefs);
+    _currentUserRepository = SharedPrefsCurrentUserRepository(prefs);
+    _userRepository = SharedPrefsUserRepository(prefs);
     _subjectService = SubjectService(_subjectRepository!);
+    _userService = UserService(_userRepository!, _currentUserRepository!);
     if (mounted) {
       _connectivityService = ConnectivityService(context);
     }
@@ -96,7 +108,8 @@ class HomePageState extends State<HomePage> {
   }
 
   Future<void> _loadSubjects() async {
-    final subjects = await _subjectService!.getSubjects();
+    final subjects = await _subjectService!.getSubjects(
+        (await _userService?.getCurrentUser())!.id,);
     setState(() {
       _subjects = subjects;
     });
@@ -109,7 +122,9 @@ class HomePageState extends State<HomePage> {
         ?? 0;
 
     if (name.isNotEmpty && totalLabs > 0) {
-      final subject = Subject(name, totalLabs, completedLabs);
+      final subject = Subject(const Uuid().v4(),
+          name, totalLabs, completedLabs,
+          (await _userService?.getCurrentUser())!.id,);
       await _subjectService!.addSubject(subject);
       _loadSubjects();
       _clearSubjectForm();
@@ -126,9 +141,11 @@ class HomePageState extends State<HomePage> {
     if (subject.completedLabs == subject.totalLabs) return;
 
     final updatedSubject = Subject(
+      subject.id,
       subject.name,
       subject.totalLabs,
       subject.completedLabs + 1,
+      subject.userId,
     );
     await _subjectService!.updateSubject(updatedSubject);
     _loadSubjects();
@@ -138,9 +155,11 @@ class HomePageState extends State<HomePage> {
     if (subject.completedLabs == 0) return;
 
     final updatedSubject = Subject(
+      subject.id,
       subject.name,
       subject.totalLabs,
       subject.completedLabs - 1,
+      subject.userId,
     );
     await _subjectService!.updateSubject(updatedSubject);
     _loadSubjects();
