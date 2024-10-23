@@ -1,13 +1,13 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:internet_connection_checker_plus/internet_connection_checker_plus.dart';
+import 'package:labs/repository/shared/prefs/shared_prefs_current_user_repository.dart';
+import 'package:labs/repository/shared/prefs/shared_prefs_user_repository.dart';
+import 'package:labs/service/connectivity_service.dart';
+import 'package:labs/service/user_service.dart';
+import 'package:labs/ui/widgets/no_internet_dialog.dart';
+import 'package:labs/ui/widgets/success_dialog.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:untitled/repository/shared/prefs/shared_prefs_current_user_repository.dart';
-import 'package:untitled/repository/shared/prefs/shared_prefs_user_repository.dart';
-import 'package:untitled/service/connectivity_service.dart';
-import 'package:untitled/service/user_service.dart';
-import 'package:untitled/ui/component/no_internet_dialog.dart';
-import 'package:untitled/ui/component/success_dialog.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});

@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:labs/entity/subject.dart';
+import 'package:labs/repository/shared/prefs/shared_prefs_subject_repository.dart';
+import 'package:labs/service/connectivity_service.dart';
+import 'package:labs/service/subject_service.dart';
+import 'package:labs/ui/widgets/add_subject_form.dart';
+import 'package:labs/ui/widgets/progress_overview.dart';
+import 'package:labs/ui/widgets/subject_card.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:untitled/entity/subject.dart';
-import 'package:untitled/repository/shared/prefs/shared_prefs_subject_repository.dart';
-import 'package:untitled/service/connectivity_service.dart';
-import 'package:untitled/service/subject_service.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -59,14 +62,27 @@ class HomePageState extends State<HomePage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            _buildProgressOverview(),
+            ProgressOverview(subjects: _subjects),
             const SizedBox(height: 16),
-            _buildAddSubjectForm(),
+            AddSubjectForm(
+              subjectController: _subjectController,
+              totalLabsController: _totalLabsController,
+              completedLabsController: _completedLabsController,
+              addSubject: _addSubject,
+            ),
             Expanded(
               child: ListView.builder(
                 itemCount: _subjects.length,
                 itemBuilder: (context, index) =>
-                    _buildSubjectCard(_subjects[index]),
+                    SubjectCard(
+                      subject: _subjects[index],
+                      incrementLabs: () =>
+                          _incrementCompletedLabs(_subjects[index]),
+                      decrementLabs: () =>
+                          _decrementCompletedLabs(_subjects[index]),
+                      removeSubject: () =>
+                          _removeSubject(_subjects[index]),
+                    ),
               ),
             ),
           ],
@@ -77,116 +93,6 @@ class HomePageState extends State<HomePage> {
         child: const Icon(Icons.account_circle),
       ),
     );
-  }
-
-  Widget _buildProgressOverview() {
-    final totalLabs = _subjects
-        .fold(0, (sum, subject) => sum + subject.totalLabs);
-    final completedLabs = _subjects
-        .fold(0, (sum, subject) => sum + subject.completedLabs);
-    final pendingLabs = totalLabs - completedLabs;
-    final double completionRate = totalLabs > 0 ? completedLabs
-        / totalLabs : 0.0;
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const Text(
-          'Labs Progress',
-          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-        ),
-        const SizedBox(height: 8),
-        LinearProgressIndicator(
-          value: completionRate,
-          backgroundColor: Colors.grey[300],
-          color: Colors.blue,
-        ),
-        const SizedBox(height: 8),
-        Text('Completed: $completedLabs Labs'),
-        Text('Pending: $pendingLabs Labs'),
-      ],
-    );
-  }
-
-  Widget _buildAddSubjectForm() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        TextField(
-          controller: _subjectController,
-          decoration: const InputDecoration(labelText: 'Subject Name'),
-        ),
-        TextField(
-          controller: _totalLabsController,
-          decoration: const InputDecoration(labelText: 'Total Labs'),
-          keyboardType: TextInputType.number,
-        ),
-        TextField(
-          controller: _completedLabsController,
-          decoration: const InputDecoration(labelText: 'Completed Labs'),
-          keyboardType: TextInputType.number,
-        ),
-        const SizedBox(height: 8),
-        ElevatedButton(
-          onPressed: _addSubject,
-          child: const Text('Add Subject'),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildSubjectCard(Subject subject) {
-    return Card(
-      elevation: 4,
-      margin: const EdgeInsets.symmetric(vertical: 8),
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              subject.name,
-              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 8),
-            LinearProgressIndicator(
-              value: subject.totalLabs > 0 ? subject.completedLabs
-                  / subject.totalLabs : 0,
-              backgroundColor: Colors.grey[300],
-              color: Colors.green,
-            ),
-            const SizedBox(height: 8),
-            Text('Total Labs: ${subject.totalLabs}'),
-            Text('Completed: ${subject.completedLabs} '
-                '| Pending: ${subject.totalLabs - subject.completedLabs}'),
-            const SizedBox(height: 8),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                ElevatedButton(
-                  onPressed: () => _incrementCompletedLabs(subject),
-                  child: const Text('+'),
-                ),
-                ElevatedButton(
-                  onPressed: () => _decrementCompletedLabs(subject),
-                  child: const Text('-'),
-                ),
-                ElevatedButton(
-                  onPressed: () => _removeSubject(subject),
-                  child: const Text('X', style: TextStyle(color: Colors.red)),
-                ),
-              ],
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  void _clearSubjectForm() {
-    _subjectController.clear();
-    _totalLabsController.clear();
-    _completedLabsController.clear();
   }
 
   Future<void> _loadSubjects() async {
@@ -210,10 +116,14 @@ class HomePageState extends State<HomePage> {
     }
   }
 
+  void _clearSubjectForm() {
+    _subjectController.clear();
+    _totalLabsController.clear();
+    _completedLabsController.clear();
+  }
+
   Future<void> _incrementCompletedLabs(Subject subject) async {
-    if (subject.completedLabs == subject.totalLabs) {
-      return;
-    }
+    if (subject.completedLabs == subject.totalLabs) return;
 
     final updatedSubject = Subject(
       subject.name,
@@ -225,9 +135,7 @@ class HomePageState extends State<HomePage> {
   }
 
   Future<void> _decrementCompletedLabs(Subject subject) async {
-    if (subject.completedLabs == 0) {
-      return;
-    }
+    if (subject.completedLabs == 0) return;
 
     final updatedSubject = Subject(
       subject.name,

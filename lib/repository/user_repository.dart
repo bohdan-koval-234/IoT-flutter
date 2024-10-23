@@ -1,4 +1,4 @@
-import 'package:untitled/entity/user.dart';
+import 'package:labs/entity/user.dart';
 
 abstract class UserRepository {
   Future<void> add(User user);

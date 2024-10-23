@@ -1,4 +1,4 @@
-import 'package:untitled/entity/subject.dart';
+import 'package:labs/entity/subject.dart';
 
 abstract class SubjectRepository {
   Future<List<Subject>> getSubjects();

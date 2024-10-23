@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:labs/entity/user.dart';
+import 'package:labs/repository/shared/prefs/shared_prefs_current_user_repository.dart';
+import 'package:labs/repository/shared/prefs/shared_prefs_user_repository.dart';
+import 'package:labs/service/user_service.dart';
+import 'package:labs/ui/widgets/logout_confirmation_dialog.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:untitled/entity/user.dart';
-import 'package:untitled/repository/shared/prefs/shared_prefs_current_user_repository.dart';
-import 'package:untitled/repository/shared/prefs/shared_prefs_user_repository.dart';
-import 'package:untitled/service/user_service.dart';
-import 'package:untitled/ui/component/logout_confirmation_dialog.dart';
 
 class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});

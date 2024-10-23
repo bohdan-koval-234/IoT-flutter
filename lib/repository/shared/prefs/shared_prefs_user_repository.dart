@@ -1,8 +1,8 @@
 import 'dart:convert';
 
+import 'package:labs/entity/user.dart';
+import 'package:labs/repository/user_repository.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:untitled/entity/user.dart';
-import 'package:untitled/repository/user_repository.dart';
 
 class SharedPrefsUserRepository extends UserRepository {
   static const _usersKey = 'users';

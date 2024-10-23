@@ -1,5 +1,5 @@
-import 'package:untitled/entity/subject.dart';
-import 'package:untitled/repository/subject_repository.dart';
+import 'package:labs/entity/subject.dart';
+import 'package:labs/repository/subject_repository.dart';
 
 class SubjectService {
   final SubjectRepository _subjectRepository;
