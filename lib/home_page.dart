@@ -1,4 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:untitled/entity/subject.dart';
+import 'package:untitled/widgets/add_subject_form.dart';
+import 'package:untitled/widgets/progress_overview.dart';
+import 'package:untitled/widgets/subject_card.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -24,144 +28,58 @@ class HomePageState extends State<HomePage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            _buildProgressOverview(),
+            ProgressOverview(subjects: subjects),
             const SizedBox(height: 20),
-            _buildAddSubjectForm(),
+            AddSubjectForm(
+              subjectController: subjectController,
+              totalLabsController: totalLabsController,
+              completedLabsController: completedLabsController,
+              onAddSubject: _addSubject,
+            ),
             Expanded(
               child: ListView.builder(
                 itemCount: subjects.length,
                 itemBuilder: (context, index) {
-                  return _buildSubjectCard(subjects[index]);
+                  return SubjectCard(
+                    subject: subjects[index],
+                    onIncrement: () => _incrementCompletedLabs(subjects[index]),
+                    onDecrement: () => _decrementCompletedLabs(subjects[index]),
+                  );
                 },
               ),
             ),
           ],
         ),
       ),
-      floatingActionButton: Stack(
-        children: [
-          Align(
-            alignment: Alignment.bottomRight,
+      floatingActionButton: _buildFloatingActions(),
+    );
+  }
+
+  Widget _buildFloatingActions() {
+    return Stack(
+      children: [
+        Align(
+          alignment: Alignment.bottomRight,
+          child: FloatingActionButton(
+            onPressed: _showAddSubjectDialog,
+            tooltip: 'Add Subject',
+            child: const Icon(Icons.add),
+          ),
+        ),
+        Align(
+          alignment: Alignment.bottomLeft,
+          child: Padding(
+            padding: const EdgeInsets.only(left: 30),
             child: FloatingActionButton(
-              onPressed: _showAddSubjectDialog,
-              tooltip: 'Add Subject',
-              heroTag: 'Add Subject',
-              child: const Icon(Icons.add),
+              onPressed: () {
+                Navigator.pushNamed(context, '/profile');
+              },
+              tooltip: 'Profile',
+              child: const Icon(Icons.account_circle),
             ),
           ),
-          Align(
-            alignment: Alignment.bottomLeft,
-            child:
-              Padding(
-                  padding: const EdgeInsets.only(left: 30),
-                  child: FloatingActionButton(
-                    onPressed: () {
-                      Navigator.pushNamed(context, '/profile');
-                    },
-                    tooltip: 'Profile',
-                    child: const Icon(Icons.account_circle),
-                 ),
-              ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildProgressOverview() {
-    final int totalLabs = subjects.fold(0, (sum, item) => sum + item.totalLabs);
-    final int completedLabs = subjects
-        .fold(0, (sum, item) => sum + item.completedLabs);
-    final int pendingLabs = totalLabs - completedLabs;
-    final double completionRate = totalLabs > 0 ? completedLabs / totalLabs : 0;
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const Text(
-          'Labs Progress',
-          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-        ),
-        const SizedBox(height: 10),
-        LinearProgressIndicator(
-          value: completionRate,
-          backgroundColor: Colors.grey[300],
-          color: Colors.blue,
-        ),
-        const SizedBox(height: 10),
-        Text('Completed: $completedLabs Labs'),
-        Text('Pending: $pendingLabs Labs'),
-      ],
-    );
-  }
-
-  Widget _buildAddSubjectForm() {
-    return Column(
-      children: [
-        TextField(
-          controller: subjectController,
-          decoration: const InputDecoration(labelText: 'Subject Name'),
-        ),
-        TextField(
-          controller: totalLabsController,
-          decoration: const InputDecoration(labelText: 'Total Labs'),
-          keyboardType: TextInputType.number,
-        ),
-        TextField(
-          controller: completedLabsController,
-          decoration: const InputDecoration(labelText: 'Completed Labs'),
-          keyboardType: TextInputType.number,
-        ),
-        const SizedBox(height: 10),
-        ElevatedButton(
-          onPressed: _addSubject,
-          child: const Text('Add Subject'),
         ),
       ],
-    );
-  }
-
-  Widget _buildSubjectCard(Subject subject) {
-    return Card(
-      elevation: 4,
-      margin: const EdgeInsets.symmetric(vertical: 10),
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              subject.name,
-              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 10),
-            LinearProgressIndicator(
-              value: subject.totalLabs > 0
-                  ? subject.completedLabs / subject.totalLabs
-                  : 0,
-              backgroundColor: Colors.grey[300],
-              color: Colors.green,
-            ),
-            const SizedBox(height: 10),
-            Text('Total Labs: ${subject.totalLabs}'),
-            Text('Completed: ${subject.completedLabs} '
-                '| Pending: ${subject.totalLabs - subject.completedLabs}'),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                ElevatedButton(
-                  onPressed: () => _incrementCompletedLabs(subject),
-                  child: const Text('Add Completed Lab'),
-                ),
-                ElevatedButton(
-                  onPressed: () => _decrementCompletedLabs(subject),
-                  child: const Text('Remove Completed Lab'),
-                ),
-              ],
-            ),
-          ],
-        ),
-      ),
     );
   }
 
@@ -202,7 +120,12 @@ class HomePageState extends State<HomePage> {
       builder: (context) {
         return AlertDialog(
           title: const Text('Add New Subject'),
-          content: _buildAddSubjectForm(),
+          content: AddSubjectForm(
+            subjectController: subjectController,
+            totalLabsController: totalLabsController,
+            completedLabsController: completedLabsController,
+            onAddSubject: _addSubject,
+          ),
           actions: [
             TextButton(
               onPressed: () {
@@ -215,12 +138,4 @@ class HomePageState extends State<HomePage> {
       },
     );
   }
-}
-
-class Subject {
-  final String name;
-  final int totalLabs;
-  int completedLabs;
-
-  Subject(this.name, this.totalLabs, this.completedLabs);
 }
