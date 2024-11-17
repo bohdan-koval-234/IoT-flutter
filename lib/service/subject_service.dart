@@ -1,10 +1,25 @@
 import 'package:labs/entity/subject.dart';
+import 'package:labs/repository/api/api_subject_repository.dart';
 import 'package:labs/repository/subject_repository.dart';
 
 class SubjectService {
-  final SubjectRepository _subjectRepository;
+  static final SubjectService _instance = SubjectService._internal();
 
-  SubjectService(this._subjectRepository);
+  late final SubjectRepository _subjectRepository;
+
+  factory SubjectService() {
+    return _instance;
+  }
+
+  SubjectService._internal();
+
+  static Future<SubjectService> initialize() async {
+    final subjectRepository = ApiSubjectRepository();
+
+    _instance._subjectRepository = subjectRepository;
+
+    return _instance;
+  }
 
   Future<List<Subject>> getSubjects(String userId) async {
     return await _subjectRepository.getSubjects(userId);

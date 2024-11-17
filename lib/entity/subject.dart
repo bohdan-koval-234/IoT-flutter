@@ -40,4 +40,20 @@ class Subject {
       data['userId'] as String,
     );
   }
+
+  Subject copyWith({
+    String? id,
+    String? name,
+    int? totalLabs,
+    int? completedLabs,
+    String? userId,
+  }) {
+    return Subject(
+      id ?? this.id,
+      name ?? this.name,
+      totalLabs ?? this.totalLabs,
+      completedLabs ?? this.completedLabs,
+      userId ?? this.userId,
+    );
+  }
 }

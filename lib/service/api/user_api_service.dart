@@ -20,7 +20,8 @@ class UserApiService {
     if (response.statusCode == 200) {
       try {
         if (response.body.isNotEmpty) {
-          final Map<String, dynamic> userJson = jsonDecode(response.body) as Map<String, dynamic>;
+          final Map<String, dynamic> userJson = jsonDecode(response.body)
+          as Map<String, dynamic>;
           return User.fromJson(userJson);
         } else {
           throw const FormatException('Empty response body');
@@ -57,7 +58,8 @@ class UserApiService {
     if (response.statusCode == 200) {
       final List<dynamic> usersJson =
       jsonDecode(response.body) as List<dynamic>;
-      return usersJson.map((json) => User.fromJson(json as Map<String, dynamic>))
+      return usersJson.map((json) =>
+          User.fromJson(json as Map<String, dynamic>),)
           .toList();
     } else {
       return [];
