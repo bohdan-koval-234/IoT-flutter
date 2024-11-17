@@ -5,7 +5,7 @@ import 'package:labs/entity/subject.dart';
 class SubjectApiService {
   final String baseUrl;
   static final SubjectApiService _instance = SubjectApiService
-      ._internal('http://localhost:8080');
+      ._internal('https://76e85ddf272903ec1b3614c87e4f0b8b.serveo.net');
 
   factory SubjectApiService() {
     return _instance;
