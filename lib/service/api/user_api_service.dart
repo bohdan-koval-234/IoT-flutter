@@ -6,7 +6,7 @@ import 'package:labs/entity/user.dart';
 class UserApiService {
   final String baseUrl;
   static final UserApiService _instance = UserApiService
-      ._internal('https://76e85ddf272903ec1b3614c87e4f0b8b.serveo.net');
+      ._internal('http://localhost:8080');
 
   factory UserApiService() {
     return _instance;
