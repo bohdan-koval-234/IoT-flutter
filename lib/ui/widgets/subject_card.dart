@@ -18,46 +18,25 @@ class SubjectCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Card(
-      elevation: 4,
-      margin: const EdgeInsets.symmetric(vertical: 8),
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+      child: ListTile(
+        title: Text(subject.name),
+        subtitle: Text(
+          'Completed: ${subject.completedLabs} / ${subject.totalLabs}',
+        ),
+        trailing: Row(
+          mainAxisSize: MainAxisSize.min,
           children: [
-            Text(
-              subject.name,
-              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            IconButton(
+              icon: const Icon(Icons.add),
+              onPressed: incrementLabs,
             ),
-            const SizedBox(height: 8),
-            LinearProgressIndicator(
-              value: subject.totalLabs > 0
-                  ? subject.completedLabs / subject.totalLabs
-                  : 0,
-              backgroundColor: Colors.grey[300],
-              color: Colors.green,
+            IconButton(
+              icon: const Icon(Icons.remove),
+              onPressed: decrementLabs,
             ),
-            const SizedBox(height: 8),
-            Text('Total Labs: ${subject.totalLabs}'),
-            Text('Completed: ${subject.completedLabs} | Pending: '
-                '${subject.totalLabs - subject.completedLabs}'),
-            const SizedBox(height: 8),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                ElevatedButton(
-                  onPressed: incrementLabs,
-                  child: const Text('+'),
-                ),
-                ElevatedButton(
-                  onPressed: decrementLabs,
-                  child: const Text('-'),
-                ),
-                ElevatedButton(
-                  onPressed: removeSubject,
-                  child: const Text('X', style: TextStyle(color: Colors.red)),
-                ),
-              ],
+            IconButton(
+              icon: const Icon(Icons.delete),
+              onPressed: removeSubject,
             ),
           ],
         ),

@@ -30,4 +30,14 @@ class Subject {
       data['userId'] as String,
     );
   }
+
+  static Subject fromJsonMap(Map<String, dynamic> data) {
+    return Subject(
+      data['id'] as String,
+      data['name'] as String,
+      data['totalLabs'] as int,
+      data['completedLabs'] as int,
+      data['userId'] as String,
+    );
+  }
 }

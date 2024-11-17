@@ -17,4 +17,8 @@ class SubjectService {
   Future<void> updateSubject(Subject subject) async {
     await _subjectRepository.updateSubject(subject);
   }
+
+  Future<void> deleteSubject(Subject subject) async {
+    await _subjectRepository.deleteSubject(subject);
+  }
 }

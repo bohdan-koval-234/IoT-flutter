@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:labs/entity/user.dart';
+import 'package:labs/repository/api/api_user_repository.dart';
 import 'package:labs/repository/shared/prefs/shared_prefs_current_user_repository.dart';
-import 'package:labs/repository/shared/prefs/shared_prefs_user_repository.dart';
+import 'package:labs/repository/user_repository.dart';
 import 'package:labs/service/user_service.dart';
 import 'package:labs/ui/widgets/logout_confirmation_dialog.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -15,14 +16,14 @@ class ProfilePage extends StatefulWidget {
 
 class ProfilePageState extends State<ProfilePage> {
   final _emailController = TextEditingController();
-  SharedPrefsUserRepository? _userRepository;
+  UserRepository? _userRepository;
   SharedPrefsCurrentUserRepository? _currentUserRepository;
   UserService? _userService;
   User? _user;
 
   Future<void> _initializeServices() async {
     final prefs = await SharedPreferences.getInstance();
-    _userRepository = SharedPrefsUserRepository(prefs);
+    _userRepository = ApiUserRepository();
     _currentUserRepository = SharedPrefsCurrentUserRepository(prefs);
     _userService = UserService(_userRepository!, _currentUserRepository!);
 

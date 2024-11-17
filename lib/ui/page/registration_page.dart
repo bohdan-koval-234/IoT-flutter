@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:internet_connection_checker_plus/internet_connection_checker_plus.dart';
+import 'package:labs/repository/api/api_user_repository.dart';
 import 'package:labs/repository/shared/prefs/shared_prefs_current_user_repository.dart';
-import 'package:labs/repository/shared/prefs/shared_prefs_user_repository.dart';
+import 'package:labs/repository/user_repository.dart';
 import 'package:labs/service/connectivity_service.dart';
 import 'package:labs/service/user_service.dart';
 import 'package:labs/ui/widgets/no_internet_dialog.dart';
@@ -18,7 +19,7 @@ class RegistrationPage extends StatefulWidget {
 class RegistrationPageState extends State<RegistrationPage> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
-  SharedPrefsUserRepository? _userRepository;
+  UserRepository? _userRepository;
   SharedPrefsCurrentUserRepository? _currentUserRepository;
   UserService? _userService;
   ConnectivityService? _connectivityService;
@@ -31,7 +32,7 @@ class RegistrationPageState extends State<RegistrationPage> {
 
   Future<void> _initializeServices() async {
     final prefs = await SharedPreferences.getInstance();
-    _userRepository = SharedPrefsUserRepository(prefs);
+    _userRepository = ApiUserRepository();
     _currentUserRepository = SharedPrefsCurrentUserRepository(prefs);
     _userService = UserService(_userRepository!, _currentUserRepository!);
     if (mounted) {

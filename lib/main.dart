@@ -4,7 +4,7 @@ import 'package:labs/ui/page/login/login_page.dart';
 import 'package:labs/ui/page/profile_page.dart';
 import 'package:labs/ui/page/registration_page.dart';
 
-void main() {
+void main() async {
   runApp(const MyApp());
 }
 
