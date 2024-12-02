@@ -1,8 +1,9 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:internet_connection_checker_plus/internet_connection_checker_plus.dart';
+import 'package:labs/repository/api/api_user_repository.dart';
 import 'package:labs/repository/shared/prefs/shared_prefs_current_user_repository.dart';
-import 'package:labs/repository/shared/prefs/shared_prefs_user_repository.dart';
+import 'package:labs/repository/user_repository.dart';
 import 'package:labs/service/connectivity_service.dart';
 import 'package:labs/service/user_service.dart';
 import 'package:labs/ui/page/login/login_helpers.dart';
@@ -12,7 +13,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 class LoginService {
   final BuildContext context;
-  SharedPrefsUserRepository? _userRepository;
+  UserRepository? _userRepository;
   SharedPrefsCurrentUserRepository? _currentUserRepository;
   UserService? _userService;
   ConnectivityService? _connectivityService;
@@ -27,7 +28,7 @@ class LoginService {
   Future<void> _initializeServices() async {
     try {
       final prefs = await SharedPreferences.getInstance();
-      _userRepository = SharedPrefsUserRepository(prefs);
+      _userRepository = ApiUserRepository();
       _currentUserRepository = SharedPrefsCurrentUserRepository(prefs);
       _userService = UserService(_userRepository!, _currentUserRepository!);
 
