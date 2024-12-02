@@ -1,27 +1,32 @@
 import 'package:flutter/material.dart';
+import 'package:internet_connection_checker_plus/internet_connection_checker_plus.dart';
 import 'package:labs/repository/shared/prefs/shared_prefs_current_user_repository.dart';
 import 'package:labs/repository/shared/prefs/shared_prefs_user_repository.dart';
+import 'package:labs/service/connectivity_service.dart';
 import 'package:labs/service/user_service.dart';
+import 'package:labs/ui/widgets/no_internet_dialog.dart';
+import 'package:labs/ui/widgets/success_dialog.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-class LoginPage extends StatefulWidget {
-  const LoginPage({super.key});
+class RegistrationPage extends StatefulWidget {
+  const RegistrationPage({super.key});
 
   @override
-  LoginPageState createState() => LoginPageState();
+  RegistrationPageState createState() => RegistrationPageState();
 }
 
-class LoginPageState extends State<LoginPage> {
+class RegistrationPageState extends State<RegistrationPage> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   SharedPrefsUserRepository? _userRepository;
   SharedPrefsCurrentUserRepository? _currentUserRepository;
   UserService? _userService;
+  ConnectivityService? _connectivityService;
 
   @override
   void initState() {
     super.initState();
-    _initializeAndInitializeCurrentUser();
+    _initializeServices();
   }
 
   Future<void> _initializeServices() async {
@@ -29,27 +34,24 @@ class LoginPageState extends State<LoginPage> {
     _userRepository = SharedPrefsUserRepository(prefs);
     _currentUserRepository = SharedPrefsCurrentUserRepository(prefs);
     _userService = UserService(_userRepository!, _currentUserRepository!);
+    if (mounted) {
+      _connectivityService = ConnectivityService(context);
+    }
 
     setState(() {});
   }
 
-  Future<void> _initializeAndInitializeCurrentUser() async {
-    await _initializeServices();
-    await _initializeCurrentUser();
-  }
-
-  Future<void> _initializeCurrentUser() async {
-    final user = await _currentUserRepository!.getCurrentUser();
-    if (user != null && mounted) {
-      Navigator.pushNamed(context, '/home');
-    }
+  @override
+  void dispose() {
+    _connectivityService?.dispose();
+    super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Login'),
+        title: const Text('Register'),
       ),
       body: Padding(
         padding: const EdgeInsets.all(16),
@@ -67,12 +69,8 @@ class LoginPageState extends State<LoginPage> {
             ),
             const SizedBox(height: 16),
             ElevatedButton(
-              onPressed: _loginUser,
-              child: const Text('Login'),
-            ),
-            TextButton(
-              onPressed: () => Navigator.pushNamed(context, '/register'),
-              child: const Text('Don\'t have an account? Register'),
+              onPressed: _registerUser,
+              child: const Text('Register'),
             ),
           ],
         ),
@@ -80,45 +78,44 @@ class LoginPageState extends State<LoginPage> {
     );
   }
 
-  Future<void> _loginUser() async {
-    final email = _emailController.text.trim();
-    final password = _passwordController.text.trim();
+  Future<void> _registerUser() async {
+    final status = await _connectivityService?.getCurrentStatus();
+
+    if (status == InternetStatus.disconnected && mounted) {
+      showNoInternetDialog(context);
+      return;
+    }
+
+    final email = _emailController.text;
+    final password = _passwordController.text;
 
     if (_isValid(email, password)) {
-      try {
-        final bool login = await _userService!.login(email, password);
-        if (login && mounted) {
-          Navigator.pushNamed(context, '/home');
-        } else {
-           if (mounted) {
-             ScaffoldMessenger.of(context).showSnackBar(
-               const SnackBar(
-                 content: Text('Invalid email or password'),
-               ),
-             );
-           }
-        }
-      } catch (e) {
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Invalid email or password'),
-            ),
-          );
-        }
+      final bool registered = await _userService!.register(email, password);
+      if (!registered && mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('User already exists'),
+          ),
+        );
+        return;
       }
+      if (mounted) {
+        showSuccessDialog(context, () {
+          Navigator.pushNamed(context, '/home');
+        }, 'Register successful!',);
+      }
+    } else if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Invalid input'),
+        ),
+      );
     }
   }
 
   bool _isValid(String email, String password) {
-    if (email.isEmpty || password.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Please fill all fields'),
-        ),
-      );
-      return false;
-    }
-    return true;
+    return RegExp(r"^[a-zA-Z0-9.a-zA-Z0-9.!#$%&'*+-/=?^_`{|}~]+@[a-zA-Z0-9]+\.[a-zA-Z]+")
+            .hasMatch(email) && password.length >= 6;
+
   }
 }
