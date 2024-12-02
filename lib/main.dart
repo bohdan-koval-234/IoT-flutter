@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:labs/home_page.dart';
-import 'package:labs/login_page.dart';
-import 'package:labs/profile_page.dart';
-import 'package:labs/registration_page.dart';
+import 'package:labs/ui/home_page.dart';
+import 'package:labs/ui/login_page.dart';
+import 'package:labs/ui/profile_page.dart';
+import 'package:labs/ui/registration_page.dart';
 
 void main() {
   runApp(const MyApp());
@@ -18,8 +18,9 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
-      initialRoute: '/login',
+      initialRoute: '/',
       routes: {
+        '/': (context) => const LoginPage(),
         '/login': (context) => const LoginPage(),
         '/register': (context) => const RegistrationPage(),
         '/profile': (context) => const ProfilePage(),
