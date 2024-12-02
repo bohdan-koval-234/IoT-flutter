@@ -1,12 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:labs/entity/user.dart';
 import 'package:labs/ui/blocs/auth/auth_bloc.dart';
 import 'package:labs/ui/widgets/success_dialog.dart';
-import 'package:uuid/uuid.dart';
 
-class RegistrationPage extends StatelessWidget {
-  const RegistrationPage({super.key});
+class LoginPage extends StatelessWidget {
+  const LoginPage({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -15,7 +13,7 @@ class RegistrationPage extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Register'),
+        title: const Text('Login'),
       ),
       body: Padding(
         padding: const EdgeInsets.all(16),
@@ -33,9 +31,13 @@ class RegistrationPage extends StatelessWidget {
             ),
             const SizedBox(height: 16),
             ElevatedButton(
-              onPressed: () => _registerUser(context, emailController.text,
+              onPressed: () => _loginUser(context, emailController.text,
                   passwordController.text,),
-              child: const Text('Register'),
+              child: const Text('Login'),
+            ),
+            TextButton(
+              onPressed: () => Navigator.pushNamed(context, '/register'),
+              child: const Text('Don\'t have an account? Register'),
             ),
           ],
         ),
@@ -43,8 +45,9 @@ class RegistrationPage extends StatelessWidget {
     );
   }
 
-  void _registerUser(
+  void _loginUser(
       BuildContext context, String email, String password,) async {
+    // Perform validation
     if (!_isValid(email, password)) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Invalid email or password')),
@@ -52,31 +55,30 @@ class RegistrationPage extends StatelessWidget {
       return;
     }
 
-    final user = User(const Uuid().v4(), email, password);
-
     final userService = context.read<AuthBloc>().userService;
-    final bool registered = await userService.register(email, password);
+    final bool login = await userService.login(email, password);
 
-    if (registered && context.mounted) {
-      context.read<AuthBloc>().add(LoggedIn(user));
-      showSuccessDialog(
-        context,
-            () => Navigator.pushNamed(context, '/home'),
-        'Registration successful!',
-      );
+    if (login) {
+      final user = await userService.getCurrentUser();
+
+      if (context.mounted) {
+        context.read<AuthBloc>().add(LoggedIn(user!));
+        showSuccessDialog(
+          context,
+              () => Navigator.pushNamed(context, '/home'),
+          'Login successful!',
+        );
+      }
     } else {
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('User already exists')),
+          const SnackBar(content: Text('Invalid email or password')),
         );
       }
     }
   }
 
   bool _isValid(String email, String password) {
-    return RegExp(
-        r'^[a-zA-Z0-9.]+@[a-zA-Z0-9]+\.[a-zA-Z]+',)
-        .hasMatch(email) &&
-        password.length >= 6;
+    return email.isNotEmpty && password.isNotEmpty;
   }
 }

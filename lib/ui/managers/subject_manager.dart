@@ -1,10 +1,7 @@
 import 'package:labs/entity/subject.dart';
-import 'package:labs/repository/api/api_subject_repository.dart';
 import 'package:labs/repository/api/api_user_repository.dart';
-import 'package:labs/repository/shared/prefs/shared_prefs_current_user_repository.dart';
 import 'package:labs/service/subject_service.dart';
 import 'package:labs/service/user_service.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:uuid/uuid.dart';
 
 class SubjectManager {
@@ -14,12 +11,9 @@ class SubjectManager {
   SubjectManager(this._subjectService, this._userService);
 
   static Future<SubjectManager> initialize() async {
-    final subjectRepository = ApiSubjectRepository();
     final userRepository = ApiUserRepository();
-    final currentUserRepository = SharedPrefsCurrentUserRepository(
-        await SharedPreferences.getInstance(),);
-    final subjectService = SubjectService(subjectRepository);
-    final userService = UserService(userRepository, currentUserRepository);
+    final subjectService = SubjectService();
+    final userService = UserService(userRepository);
 
     return SubjectManager(subjectService, userService);
   }
@@ -51,7 +45,8 @@ class SubjectManager {
     await _subjectService.addSubject(subject);
   }
 
-  Future<void> incrementLabs(Subject subject, void Function() onComplete) async {
+  Future<void> incrementLabs(Subject subject,
+      void Function() onComplete,) async {
     if (subject.completedLabs < subject.totalLabs) {
       final updatedSubject = Subject(
         subject.id,
@@ -65,7 +60,8 @@ class SubjectManager {
     }
   }
 
-  Future<void> decrementLabs(Subject subject, void Function() onComplete) async {
+  Future<void> decrementLabs(Subject subject,
+      void Function() onComplete,) async {
     if (subject.completedLabs > 0) {
       final updatedSubject = Subject(
         subject.id,

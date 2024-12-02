@@ -1,13 +1,33 @@
 import 'package:labs/entity/user.dart';
+import 'package:labs/repository/api/api_user_repository.dart';
 import 'package:labs/repository/current_user_repository.dart';
+import 'package:labs/repository/shared/prefs/shared_prefs_current_user_repository.dart';
 import 'package:labs/repository/user_repository.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:uuid/uuid.dart';
 
 class UserService {
-  final UserRepository _userRepository;
-  final CurrentUserRepository currentUserRepository;
+  static final UserService _instance = UserService._internal();
 
-  UserService(this._userRepository, this.currentUserRepository);
+  late final UserRepository _userRepository;
+  late final CurrentUserRepository currentUserRepository;
+
+  factory UserService(UserRepository userRepository) {
+    return _instance;
+  }
+
+  UserService._internal();
+
+  static Future<UserService> initialize() async {
+    final userRepository = ApiUserRepository();
+    final prefs = await SharedPreferences.getInstance();
+    final currentUserRepository = SharedPrefsCurrentUserRepository(prefs);
+
+    _instance._userRepository = userRepository;
+    _instance.currentUserRepository = currentUserRepository;
+
+    return _instance;
+  }
 
   Future<bool> login(String email, String password) async {
     final users = await _userRepository.get();
